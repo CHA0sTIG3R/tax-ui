@@ -213,21 +213,6 @@ export default function TaxRatesApp() {
             <BracketTable brackets={calc.brackets} />
           </section>
         )}
-
-        <section className="rounded-2xl border bg-white p-4 text-sm text-gray-700">
-          <h3 className="mb-2 text-base font-semibold">Integration Notes</h3>
-          <ol className="list-decimal space-y-2 pl-5">
-            <li>
-              <span className="font-medium">Vite Dev Proxy:</span> use <code>vite.config.ts</code> below to forward <code>/api</code> → <code>http://localhost:8080</code> and avoid CORS.
-            </li>
-            <li>
-              <span className="font-medium">Prod Base URL:</span> set <code>VITE_API_BASE_URL</code> when deploying if your API isn’t same-origin.
-            </li>
-            <li>
-              <span className="font-medium">Typing:</span> compare these interfaces to your Spring DTOs to keep contracts in sync.
-            </li>
-          </ol>
-        </section>
       </main>
 
       <footer className="mx-auto max-w-7xl px-4 pb-8 text-center text-xs text-gray-500">
