@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import "./App.css";
 import TrendCard from "./components/TrendCard";
 import BracketTable from "./components/BracketTable";
 import { fetchCalculation, fetchHistory } from "./api";
