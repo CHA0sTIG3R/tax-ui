@@ -1,9 +1,9 @@
 // Enums are common in Java, here TS has union types:
 export type FilingStatus =
-  | "SINGLE"
-  | "MARRIED_JOINT"
-  | "MARRIED_SEPARATE"
-  | "HEAD_OF_HOUSEHOLD";
+  | "S"
+  | "MFJ"
+  | "MFS"
+  | "HOH";
 
 // Data point returned by /api/tax/history
 export interface HistoryPoint {
@@ -13,29 +13,40 @@ export interface HistoryPoint {
 
 // Tax bracket structure
 export interface TaxBracket {
-  lower: number;
-  upper: number | null;  // null means "no upper bound"
-  rate: number;
-}
-
-// Response from /api/tax/calc
-export interface TaxCalculation {
   year: number;
   status: FilingStatus;
-  income: number;
-  marginalRate: number;
-  effectiveRate: number;
+  rangeStart: string;
+  rangeEnd: string | null; 
+  taxRate: string;
+  taxPaid: string; 
+}
+
+// Response from /api/tax/breakdown
+export interface TaxCalculation {
+  totalTaxPaid: string;
+  avgRate: string;
+  message?: string;
   brackets: TaxBracket[];
 }
 
+// Input parameters for /api/tax/breakdown
+export interface TaxInput {
+  year: number;
+  status: FilingStatus;
+  income: number;
+}
+
+// Metric types for history API
 export type HistoryMetric = "TOP_RATE" | "BRACKET_COUNT";
 
+// Filing status options for dropdowns, etc.
 export const FILING_STATUSES: { label: string; value: FilingStatus }[] = [
-  { label: "Single", value: "SINGLE" },
-  { label: "Married Filing Jointly", value: "MARRIED_JOINT" },
-  { label: "Married Filing Separately", value: "MARRIED_SEPARATE" },
-  { label: "Head of Household", value: "HEAD_OF_HOUSEHOLD" },
+  { label: "Single", value: "S" },
+  { label: "Married Filing Jointly", value: "MFJ" },
+  { label: "Married Filing Separately", value: "MFS" },
+  { label: "Head of Household", value: "HOH" },
 ];
 
+// Current year and default start year for history range
 export const CURRENT_YEAR = new Date().getFullYear();
 export const DEFAULT_START = 1913;
