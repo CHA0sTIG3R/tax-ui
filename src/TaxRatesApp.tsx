@@ -10,10 +10,11 @@ import {
   type FilingStatus,
   type HistoryPoint,
   type TaxCalculation,
+  type TaxInput
 } from "./types";
 
 export default function TaxRatesApp() {
-  const [status, setStatus] = useState<FilingStatus>("SINGLE");
+  const [status, setStatus] = useState<FilingStatus>(FILING_STATUSES[0].value);
   const [startYear, setStartYear] = useState<number>(DEFAULT_START);
   const [endYear, setEndYear] = useState<number>(CURRENT_YEAR);
   const [income, setIncome] = useState<number>(85000);
@@ -61,7 +62,9 @@ export default function TaxRatesApp() {
     try {
       setError("");
       setLoading(true);
-      const result = await fetchCalculation(yearForCalc, status, income);
+      console.log("Running calculation for:", { yearForCalc, status, income });
+      const result = await fetchCalculation({ year: yearForCalc, status, income } as TaxInput);
+      console.log("Calculation result:", result);
       setCalc(result);
     } catch (e) {
       console.error("Calculation error:", e);
@@ -194,20 +197,21 @@ export default function TaxRatesApp() {
               <h2 className="mb-2 text-lg font-semibold">Results</h2>
               <ul className="space-y-1 text-sm">
                 <li>
-                  <span className="font-medium">Year:</span> {calc.year}
+                  <strong>Total Tax Paid:</strong> {calc.totalTaxPaid}
                 </li>
                 <li>
-                  <span className="font-medium">Status:</span> {calc.status}
+                  <strong>Effective Rate:</strong> {calc.avgRate}
                 </li>
-                <li>
-                  <span className="font-medium">Income:</span> ${Number(calc.income).toLocaleString()}
-                </li>
-                <li>
-                  <span className="font-medium">Marginal Rate:</span> {calc.marginalRate}%
-                </li>
-                <li>
-                  <span className="font-medium">Effective Rate:</span> {calc.effectiveRate}%
-                </li>
+                {calc.message && (
+                  <li className="mt-2 rounded-lg bg-yellow-50 p-2 text-yellow-800">{calc.message}</li>
+                )}
+              </ul>
+              <h3 className="mt-4 mb-1 text-md font-semibold">Brackets</h3>
+              <ul className="text-xs text-gray-600">
+                <li><em>Note:</em> Rates are marginal. Tax Paid is per bracket, not total.</li>
+              </ul>
+              <ul className="text-xs text-gray-600">
+                <li><em>Example:</em> 10% on first $11k, 12% on next $33k, etc.</li>
               </ul>
             </div>
 
