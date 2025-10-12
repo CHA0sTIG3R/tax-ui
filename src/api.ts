@@ -1,7 +1,8 @@
 import axios, { type AxiosInstance } from "axios";
-import type { FilingStatus, HistoryMetric, HistoryPoint, TaxCalculation } from "./types";
+import type { FilingStatus, HistoryMetric, HistoryPoint, TaxCalculation, TaxInput } from "./types";
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? "/api";
+const BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1";
+console.log("API base URL:", BASE);
 
 function CreateApi(): AxiosInstance {
     return axios.create({
@@ -11,6 +12,7 @@ function CreateApi(): AxiosInstance {
 }
 
 const api = CreateApi();
+console.log("Axios instance created with base URL:", api.defaults.baseURL);
 
 export async function fetchHistory(
     status: FilingStatus,
@@ -25,13 +27,9 @@ export async function fetchHistory(
 }
 
 
-export async function fetchCalculation(
-    year: number,
-    status: FilingStatus,
-    income: number
-): Promise<TaxCalculation> {
-    const res = await api.get<TaxCalculation>("/tax/calc", {
-        params: { year, status, income },
-    });
+export async function fetchCalculation(input: TaxInput): Promise<TaxCalculation> {
+    console.log("Sending API request with input:", input);
+    const res = await api.post<TaxCalculation>("/tax/breakdown", input);
+    console.log("API response:", res.data);
     return res.data;
 }
