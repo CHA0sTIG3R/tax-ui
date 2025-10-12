@@ -15,17 +15,21 @@ const BracketTable: React.FC<BracketTableProps> = ({ brackets }) => {
                 <table className="w-full min-w-[420px] text-left text-sm">
                     <thead>
                         <tr className="border-b bg-gray-50">
-                            <th className="p-2">Lower</th>
-                            <th className="p-2">Upper</th>
-                            <th className="p-2">Rate</th>
+                            <th className="px-3 py-2 font-medium text-gray-700">Range</th>
+                            <th className="px-3 py-2 font-medium text-gray-700">Tax Rate</th>
+                            <th className="px-3 py-2 font-medium text-gray-700">Tax Paid</th>
                         </tr>
                     </thead>
                     <tbody>
                         {brackets.map((b) => (
-                            <tr key={`${b.lower}-${b.upper ?? "inf"}-${b.rate}`} className="border-b last:border-none">
-                                <td className="p-2">${Number(b.lower).toLocaleString()}</td>
-                                <td className="p-2">{b.upper === null ? "∞" : `$${Number(b.upper).toLocaleString()}`}</td>
-                                <td className="p-2">{b.rate}%</td>
+                            <tr key={`${b.year}-${b.status}-${b.rangeStart}`} className="border-b last:border-0">
+                                <td className="px-3 py-2">
+                                    {b.rangeEnd
+                                        ? `$${Number(b.rangeStart).toLocaleString()} - $${Number(b.rangeEnd).toLocaleString()}`
+                                        : `$${Number(b.rangeStart).toLocaleString()}+`}
+                                </td>
+                                <td className="px-3 py-2">{b.taxRate}</td>
+                                <td className="px-3 py-2">${Number(b.taxPaid).toLocaleString()}</td>
                             </tr>
                         ))}
                     </tbody>
