@@ -16,9 +16,9 @@ import {
 export default function TaxRatesApp() {
   const [status, setStatus] = useState<FilingStatus>(FILING_STATUSES[0].value);
   const [startYear, setStartYear] = useState<number>(DEFAULT_START);
-  const [endYear, setEndYear] = useState<number>(CURRENT_YEAR);
+  const [endYear, setEndYear] = useState<number>(CURRENT_YEAR -1);
   const [income, setIncome] = useState<number>(85000);
-  const [yearForCalc, setYearForCalc] = useState<number>(CURRENT_YEAR);
+  const [yearForCalc, setYearForCalc] = useState<number>(CURRENT_YEAR -1);
 
   const [topRateSeries, setTopRateSeries] = useState<HistoryPoint[]>([]);
   const [bracketCountSeries, setBracketCountSeries] = useState<HistoryPoint[]>([]);
@@ -45,6 +45,9 @@ export default function TaxRatesApp() {
         if (!cancelled) {
           setTopRateSeries(top);
           setBracketCountSeries(brackets);
+          console.log("Trend data updated");
+          console.log("Top Rate Series:", top);
+          console.log("Bracket Count Series:", brackets);
         }
       } catch (e) {
         console.error("Error loading trends:", e);
