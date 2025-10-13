@@ -37,7 +37,7 @@ export interface TaxInput {
 }
 
 // Metric types for history API
-export type HistoryMetric = "TOP_RATE" | "BRACKET_COUNT";
+export type HistoryMetric = "TOP_RATE" | "BRACKET_COUNT" | "AVERAGE_RATE" | "MIN_RATE";
 
 // Filing status options for dropdowns, etc.
 export const FILING_STATUSES: { label: string; value: FilingStatus }[] = [
