@@ -23,6 +23,7 @@ export async function fetchHistory(
     const res = await api.get<HistoryPoint[]>("/tax/history", {
         params: { status, metric, startYear, endYear },
     });
+    console.log("Fetched history data:", res.data);
     return res.data;
 }
 
