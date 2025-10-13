@@ -27,7 +27,7 @@ const TrendCard: React.FC<TrendCardProps> = ({ title, data, kind, yTickFormatter
     return (
         <div className="rounded-2xl bg-white p-4 shadow-sm">
             <h2 className="mb-2 text-lg font-semibold">{title}</h2>
-            <div className="h-72">
+            <div className="h-72" style={{width: '100%', height: 300}}>
                 <ResponsiveContainer width="100%" height="100%">
                     {kind === "line" ? (
                         <LineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
