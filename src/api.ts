@@ -24,6 +24,13 @@ export async function fetchHistory(
         params: { status, metric, startYear, endYear },
     });
     console.log("Fetched history data:", res.data);
+    res.data = res.data.map(point => ({
+        ...point,
+        value: typeof point.value === "string"
+            ? Number((point.value as string).replace("%", ""))
+            : point.value
+    }));
+    console.log("Processed history data:", res.data);
     return res.data;
 }
 
