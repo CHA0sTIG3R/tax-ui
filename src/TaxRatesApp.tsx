@@ -12,6 +12,12 @@ import {
   type TaxInput
 } from "./types";
 
+
+// TODO : make the start and end year inputs distinct from the calculator year selection making sure changing one doesn't unintentionally change the other
+// OR
+// TODO : make the marginal tax calculator have its own set of inputs separate from the trend charts
+
+
 export default function TaxRatesApp() {
   const [status, setStatus] = useState<FilingStatus>(FILING_STATUSES[0].value);
   const [startYear, setStartYear] = useState<number>(DEFAULT_START);
