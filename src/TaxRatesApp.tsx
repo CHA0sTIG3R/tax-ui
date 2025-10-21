@@ -12,18 +12,16 @@ import {
   type TaxInput
 } from "./types";
 
-
-// TODO : make the start and end year inputs distinct from the calculator year selection making sure changing one doesn't unintentionally change the other
-// OR
-// TODO : make the marginal tax calculator have its own set of inputs separate from the trend charts
+// TODO
 
 
 export default function TaxRatesApp() {
-  const [status, setStatus] = useState<FilingStatus>(FILING_STATUSES[0].value);
+  const [trendStatus, setTrendStatus] = useState<FilingStatus>(FILING_STATUSES[0].value);
   const [startYear, setStartYear] = useState<number>(DEFAULT_START);
   const [endYear, setEndYear] = useState<number>(CURRENT_YEAR -1);
+  const [calcStatus, setCalcStatus] = useState<FilingStatus>(FILING_STATUSES[0].value);
+  const [calcYear, setCalcYear] = useState<number>(CURRENT_YEAR -1);
   const [income, setIncome] = useState<number>(85000);
-  const [yearForCalc, setYearForCalc] = useState<number>(CURRENT_YEAR -1);
 
   const [topRateSeries, setTopRateSeries] = useState<HistoryPoint[]>([]);
   const [bracketCountSeries, setBracketCountSeries] = useState<HistoryPoint[]>([]);
@@ -31,11 +29,12 @@ export default function TaxRatesApp() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
-  const years: number[] = useMemo(() => {
-    const s = Math.min(startYear, endYear);
-    const e = Math.max(startYear, endYear);
-    return Array.from({ length: e - s + 1 }, (_, i) => s + i);
-  }, [startYear, endYear]);
+  const calculatorYears: number[] = useMemo(() => {
+    const lastYear = CURRENT_YEAR - 1;
+    const firstYear = 1862;
+    const length = lastYear - firstYear + 1;
+    return Array.from({ length }, (_, i) => lastYear - i);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,8 +43,8 @@ export default function TaxRatesApp() {
         setError("");
         setLoading(true);
         const [top, brackets] = await Promise.all([
-          fetchHistory(status, "TOP_RATE", startYear, endYear),
-          fetchHistory(status, "BRACKET_COUNT", startYear, endYear),
+          fetchHistory(trendStatus, "TOP_RATE", startYear, endYear),
+          fetchHistory(trendStatus, "BRACKET_COUNT", startYear, endYear),
         ]);
         if (!cancelled) {
           setTopRateSeries(top);
@@ -64,14 +63,14 @@ export default function TaxRatesApp() {
     return () => {
       cancelled = true;
     };
-  }, [status, startYear, endYear]);
+  }, [trendStatus, startYear, endYear]);
 
   async function runCalc() {
     try {
       setError("");
       setLoading(true);
-      console.log("Running calculation for:", { yearForCalc, status, income });
-      const result = await fetchCalculation({ year: yearForCalc, status, income } as TaxInput);
+      console.log("Running calculation for:", { year: calcYear, status: calcStatus, income });
+      const result = await fetchCalculation({ year: calcYear, status: calcStatus, income } as TaxInput);
       console.log("Calculation result:", result);
       setCalc(result);
     } catch (e) {
@@ -108,99 +107,128 @@ export default function TaxRatesApp() {
         </header>
 
         <main className="space-y-10">
-          <section className={`${cardSurfaceClass} grid gap-5 md:grid-cols-2 lg:grid-cols-4`}>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="filing-status" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Filing Status
-              </label>
-              <select
-                id="filing-status"
-                className={`${controlClass} appearance-none`}
-                value={status}
-                onChange={(e) => setStatus(e.target.value as FilingStatus)}
-              >
-                {FILING_STATUSES.map((fs) => (
-                  <option key={fs.value} value={fs.value}>
-                    {fs.label}
-                  </option>
-                ))}
-              </select>
+          <section className={`${cardSurfaceClass} space-y-4`}>
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">Trend Filters</h2>
+              <p className="text-xs text-slate-500">Adjust the filing status and year range for the historical charts.</p>
             </div>
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="trend-filing-status" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Filing Status
+                </label>
+                <select
+                  id="trend-filing-status"
+                  className={`${controlClass} appearance-none`}
+                  value={trendStatus}
+                  onChange={(e) => setTrendStatus(e.target.value as FilingStatus)}
+                >
+                  {FILING_STATUSES.map((fs) => (
+                    <option key={fs.value} value={fs.value}>
+                      {fs.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="start-year" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Start Year
-              </label>
-              <input
-                id="start-year"
-                type="number"
-                className={controlClass}
-                min={1862}
-                max={CURRENT_YEAR}
-                value={startYear}
-                onChange={(e) => setStartYear(Number(e.target.value))}
-              />
+              <div className="flex flex-col gap-2">
+                <label htmlFor="start-year" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Start Year
+                </label>
+                <input
+                  id="start-year"
+                  type="number"
+                  className={controlClass}
+                  min={1862}
+                  max={CURRENT_YEAR}
+                  value={startYear}
+                  onChange={(e) => setStartYear(Number(e.target.value))}
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label htmlFor="end-year" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  End Year
+                </label>
+                <input
+                  id="end-year"
+                  type="number"
+                  className={controlClass}
+                  min={1862}
+                  max={CURRENT_YEAR}
+                  value={endYear}
+                  onChange={(e) => setEndYear(Number(e.target.value))}
+                />
+              </div>
             </div>
+          </section>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="end-year" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                End Year
-              </label>
-              <input
-                id="end-year"
-                type="number"
-                className={controlClass}
-                min={1862}
-                max={CURRENT_YEAR}
-                value={endYear}
-                onChange={(e) => setEndYear(Number(e.target.value))}
-              />
+          <section className={`${cardSurfaceClass} space-y-4`}>
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">Marginal Calculator</h2>
+              <p className="text-xs text-slate-500">Choose separate inputs to run the marginal tax calculation.</p>
             </div>
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="calculator-filing-status" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Filing Status
+                </label>
+                <select
+                  id="calculator-filing-status"
+                  className={`${controlClass} appearance-none`}
+                  value={calcStatus}
+                  onChange={(e) => setCalcStatus(e.target.value as FilingStatus)}
+                >
+                  {FILING_STATUSES.map((fs) => (
+                    <option key={fs.value} value={fs.value}>
+                      {fs.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="flex flex-col gap-2">
-              <label htmlFor="year-calculator" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Year (Calculator)
-              </label>
-              <select
-                id="year-calculator"
-                className={`${controlClass} appearance-none`}
-                value={yearForCalc}
-                onChange={(e) => setYearForCalc(Number(e.target.value))}
-              >
-                {years
-                  .slice()
-                  .reverse()
-                  .map((y) => (
+              <div className="flex flex-col gap-2">
+                <label htmlFor="year-calculator" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Tax Year
+                </label>
+                <select
+                  id="year-calculator"
+                  className={`${controlClass} appearance-none`}
+                  value={calcYear}
+                  onChange={(e) => setCalcYear(Number(e.target.value))}
+                >
+                  {calculatorYears.map((y) => (
                     <option key={y} value={y}>
                       {y}
                     </option>
                   ))}
-              </select>
-            </div>
+                </select>
+              </div>
 
-            <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
-              <label htmlFor="income" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Income ($)
-              </label>
-              <input
-                id="income"
-                type="number"
-                className={controlClass}
-                min={0}
-                step={100}
-                value={income}
-                onChange={(e) => setIncome(Number(e.target.value))}
-              />
-            </div>
+              <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
+                <label htmlFor="income" className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Income ($)
+                </label>
+                <input
+                  id="income"
+                  type="number"
+                  className={controlClass}
+                  min={0}
+                  step={100}
+                  value={income}
+                  onChange={(e) => setIncome(Number(e.target.value))}
+                />
+              </div>
 
-            <div className="flex items-end md:col-span-2 lg:col-span-1">
-              <button
-                className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 disabled:cursor-not-allowed disabled:bg-brand-300"
-                onClick={runCalc}
-                disabled={loading}
-              >
-                {loading ? "Running…" : "Run Calculator"}
-              </button>
+              <div className="flex items-end md:col-span-2 lg:col-span-1">
+                <button
+                  className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white shadow-card transition hover:bg-brand-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 disabled:cursor-not-allowed disabled:bg-brand-300"
+                  onClick={runCalc}
+                  disabled={loading}
+                >
+                  {loading ? "Running…" : "Run Calculator"}
+                </button>
+              </div>
             </div>
           </section>
 
@@ -210,14 +238,14 @@ export default function TaxRatesApp() {
             </div>
           )}
 
-{calc && (
+          {calc && (
             <section className="grid gap-6 lg:grid-cols-2">
               <div className={`${cardSurfaceClass} space-y-4`}>
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Results</h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Based on {income.toLocaleString()} in {yearForCalc} for{" "}
-                    {FILING_STATUSES.find((fs) => fs.value === status)?.label ?? status}.
+                    Based on {income.toLocaleString()} in {calcYear} for{" "}
+                    {FILING_STATUSES.find((fs) => fs.value === calcStatus)?.label ?? calcStatus}.
                   </p>
                 </div>
                 <ul className="space-y-2 text-sm">
