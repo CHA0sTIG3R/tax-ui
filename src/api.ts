@@ -14,6 +14,14 @@ function CreateApi(): AxiosInstance {
 const api = CreateApi();
 console.log("Axios instance created with base URL:", api.defaults.baseURL);
 
+
+export async function fetchAvailableYears(): Promise<number[]> {
+    const res = await api.get<number[]>("/tax/years");
+    console.log("Fetched available years:", res.data);
+    return res.data;
+}
+
+
 export async function fetchHistory(
     status: FilingStatus,
     metric: HistoryMetric,
