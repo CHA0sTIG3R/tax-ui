@@ -20,7 +20,7 @@ interface TrendCardProps {
   seriesName: string;
 }
 
-export default function TrendCard({ title, data, kind, yTickFormatter, seriesName }: TrendCardProps) {
+export default function TrendCard({ title, data, kind, yTickFormatter, seriesName }: Readonly<TrendCardProps>) {
   return (
     <div className="flex h-full flex-col gap-4 rounded-2xl border border-slate-200/70 bg-white/90 p-6 shadow-card backdrop-blur">
       <div>

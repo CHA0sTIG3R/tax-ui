@@ -4,7 +4,7 @@ interface BracketTableProps {
   brackets: TaxBracket[];
 }
 
-export default function BracketTable({ brackets }: BracketTableProps) {
+export default function BracketTable({ brackets }: Readonly<BracketTableProps>) {
   return (
     <div className="rounded-2xl border border-slate-200/70 bg-white/90 p-6 shadow-card backdrop-blur">
       <div className="flex flex-col gap-1">
