@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import TrendCard from "./components/TrendCard";
 import BracketTable from "./components/BracketTable";
-import { fetchCalculation, fetchHistory } from "./api";
+import { fetchCalculation, fetchHistory, fetchAvailableYears } from "./api";
 import {
   CURRENT_YEAR,
   DEFAULT_START,
@@ -12,7 +12,7 @@ import {
   type TaxInput
 } from "./types";
 
-// TODO
+// TODO : Add routing for separate pages (trends vs calculator) with a button to switch between them in the header.
 
 
 export default function TaxRatesApp() {
@@ -34,6 +34,32 @@ export default function TaxRatesApp() {
     const firstYear = 1862;
     const length = lastYear - firstYear + 1;
     return Array.from({ length }, (_, i) => lastYear - i);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setError("");
+        setLoading(true);
+        const [years] = await Promise.all([
+          fetchAvailableYears(),
+        ]);
+        console.log("Available years fetched:", years);
+        const maxYear = Math.max(...years);
+        const minYear = Math.min(...years);
+        if (endYear > maxYear) setEndYear(maxYear);
+        if (startYear < minYear) setStartYear(minYear);
+      } catch (e) {
+        console.error("Error fetching available years:", e);
+        if (!cancelled) setError("Failed to fetch available years. Check API URL & CORS.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
