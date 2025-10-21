@@ -12,7 +12,11 @@ import {
   type TaxInput
 } from "./types";
 
+
+// TODO : Fix year implementation to dynamically adjust based on available data from fetchAvailableYears.
+// TODO : Improve error handling and loading states with spinners/placeholders.
 // TODO : Add routing for separate pages (trends vs calculator) with a button to switch between them in the header.
+
 
 
 export default function TaxRatesApp() {
