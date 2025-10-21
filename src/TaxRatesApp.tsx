@@ -13,7 +13,6 @@ import {
 } from "./types";
 
 
-// TODO : Fix year implementation to dynamically adjust based on available data from fetchAvailableYears.
 // TODO : Improve error handling and loading states with spinners/placeholders.
 // TODO : Add routing for separate pages (trends vs calculator) with a button to switch between them in the header.
 
@@ -27,18 +26,31 @@ export default function TaxRatesApp() {
   const [calcYear, setCalcYear] = useState<number>(CURRENT_YEAR -1);
   const [income, setIncome] = useState<number>(85000);
 
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
   const [topRateSeries, setTopRateSeries] = useState<HistoryPoint[]>([]);
   const [bracketCountSeries, setBracketCountSeries] = useState<HistoryPoint[]>([]);
   const [calc, setCalc] = useState<TaxCalculation | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
 
-  const calculatorYears: number[] = useMemo(() => {
+  const fallbackCalculatorYears: number[] = useMemo(() => {
     const lastYear = CURRENT_YEAR - 1;
     const firstYear = 1862;
     const length = lastYear - firstYear + 1;
     return Array.from({ length }, (_, i) => lastYear - i);
   }, []);
+
+  const calculatorYears: number[] = useMemo(() => {
+    if (availableYears.length) {
+      return availableYears;
+    }
+    return fallbackCalculatorYears;
+  }, [availableYears, fallbackCalculatorYears]);
+
+  const maxAvailableYear = availableYears.length ? availableYears[0] : calculatorYears[0];
+  const minAvailableYear = availableYears.length
+    ? availableYears[availableYears.length - 1]
+    : calculatorYears[calculatorYears.length - 1];
 
   useEffect(() => {
     let cancelled = false;
@@ -49,11 +61,19 @@ export default function TaxRatesApp() {
         const [years] = await Promise.all([
           fetchAvailableYears(),
         ]);
-        console.log("Available years fetched:", years);
-        const maxYear = Math.max(...years);
-        const minYear = Math.min(...years);
-        if (endYear > maxYear) setEndYear(maxYear);
-        if (startYear < minYear) setStartYear(minYear);
+        if (cancelled) return;
+        if (!years.length) {
+          console.warn("fetchAvailableYears returned an empty array.");
+          return;
+        }
+        const sortedYears = years.slice().sort((a, b) => b - a);
+        const maxYear = sortedYears[0];
+        const minYear = sortedYears[sortedYears.length - 1];
+        setAvailableYears(sortedYears);
+        const clamp = (value: number) => Math.min(Math.max(value, minYear), maxYear);
+        setEndYear((prev) => clamp(prev));
+        setStartYear((prev) => clamp(prev));
+        setCalcYear((prev) => clamp(prev));
       } catch (e) {
         console.error("Error fetching available years:", e);
         if (!cancelled) setError("Failed to fetch available years. Check API URL & CORS.");
@@ -169,8 +189,8 @@ export default function TaxRatesApp() {
                   id="start-year"
                   type="number"
                   className={controlClass}
-                  min={1862}
-                  max={CURRENT_YEAR}
+                  min={minAvailableYear}
+                  max={maxAvailableYear}
                   value={startYear}
                   onChange={(e) => setStartYear(Number(e.target.value))}
                 />
@@ -184,8 +204,8 @@ export default function TaxRatesApp() {
                   id="end-year"
                   type="number"
                   className={controlClass}
-                  min={1862}
-                  max={CURRENT_YEAR}
+                  min={minAvailableYear}
+                  max={maxAvailableYear}
                   value={endYear}
                   onChange={(e) => setEndYear(Number(e.target.value))}
                 />
